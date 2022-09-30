@@ -135,7 +135,7 @@ describe("Authentication", () => {
 
       await waitFor(() => result.current.isSuccess);
 
-      expect(result.current.data.response.foo).toEqual("bar");
+      expect(result.current.data!.response.foo).toEqual("bar");
       // @ts-expect-error
       expect(result.current.data.response.bar).toBeUndefined();
     });

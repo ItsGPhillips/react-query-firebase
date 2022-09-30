@@ -123,7 +123,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       expect(result.current.data).toBeDefined();
       expect(result.current.data).toBeInstanceOf(DocumentSnapshot);
       const snapshot = result.current.data;
-      expect(snapshot.id).toBe(id);
+      expect(snapshot?.id).toBe(id);
     });
 
     // TODO(ehesp): cached query never resolves.
@@ -145,7 +145,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       await waitFor(() => result.current.isSuccess, { timeout: 5000 });
 
       const snapshot = result.current.data;
-      expect(snapshot.metadata.fromCache).toBe(true);
+      expect(snapshot?.metadata.fromCache).toBe(true);
     });
 
     test("it returns a DocumentSnapshot using a data server source", async () => {
@@ -164,7 +164,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       await waitFor(() => result.current.isSuccess, { timeout: 5000 });
 
       const snapshot = result.current.data;
-      expect(snapshot.metadata.fromCache).toBe(false);
+      expect(snapshot?.metadata.fromCache).toBe(false);
     });
 
     test("it overrides DocumentData generic", async () => {
@@ -191,7 +191,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const snapshot = result.current.data;
 
-      expect(snapshot.data().bar).toBe(123);
+      expect(snapshot!.data()!.bar).toBe(123);
       // @ts-expect-error
       expect(snapshot.data().baz).toBe(undefined);
     });
@@ -218,7 +218,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
           useFirestoreDocument<Foo, Bar>(hookId, ref, undefined, {
             select(snapshot) {
               return {
-                bar: snapshot.data().bar.toString(),
+                bar: snapshot!.data()!.bar.toString(),
               };
             },
           }),
@@ -230,7 +230,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       await waitFor(() => result.current.isSuccess, { timeout: 5000 });
 
       const data = result.current.data;
-      expect(data.bar).toBe("123");
+      expect(data!.bar).toBe("123");
       // @ts-expect-error
       expect(data.baz).toBe(undefined);
     });

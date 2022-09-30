@@ -45,7 +45,7 @@ describe("Database", () => {
       await waitFor(() => result.current.isSuccess);
 
       expect(result.current.data).toBeInstanceOf(DataSnapshot);
-      expect(result.current.data.exists()).toBe(false);
+      expect(result.current.data?.exists()).toBe(false);
     });
 
     test("it returns a valid snapshot with data", async () => {
@@ -64,8 +64,8 @@ describe("Database", () => {
       await waitFor(() => result.current.isSuccess);
 
       expect(result.current.data).toBeInstanceOf(DataSnapshot);
-      expect(result.current.data.exists()).toBe(true);
-      expect(result.current.data.val()).toEqual({ foo: "bar" });
+      expect(result.current.data?.exists()).toBe(true);
+      expect(result.current.data?.val()).toEqual({ foo: "bar" });
     });
 
     test("it subscribes to data snapshots", async () => {
@@ -95,8 +95,8 @@ describe("Database", () => {
       await waitFor(() => result.current.isSuccess);
 
       expect(result.current.data).toBeInstanceOf(DataSnapshot);
-      expect(result.current.data.exists()).toBe(true);
-      expect(result.current.data.val()).toEqual({ foo: "bar" });
+      expect(result.current.data?.exists()).toBe(true);
+      expect(result.current.data?.val()).toEqual({ foo: "bar" });
 
       await act(async () => {
         await update(dbRef, { bar: "baz" });
@@ -104,7 +104,7 @@ describe("Database", () => {
 
       await waitFor(() => result.current.isSuccess);
 
-      expect(result.current.data.val()).toEqual({ foo: "bar", bar: "baz" });
+      expect(result.current.data?.val()).toEqual({ foo: "bar", bar: "baz" });
 
       unmount();
 

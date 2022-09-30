@@ -51,7 +51,7 @@ describe("Authentication", () => {
       await waitFor(() => result.current.isSuccess);
 
       expect(result.current.data).toBeDefined();
-      expect(result.current.data.uid).toBe(credential.user.uid);
+      expect(result.current.data!.uid).toBe(credential.user.uid);
       unmount();
     });
 
@@ -77,7 +77,7 @@ describe("Authentication", () => {
 
       await waitFor(() => result.current.isSuccess);
 
-      expect(result.current.data.uid).toBe(credential.user.uid);
+      expect(result.current.data!.uid).toBe(credential!.user.uid);
 
       // waitForNextUpdate();
       unmount();
@@ -281,7 +281,7 @@ describe("Authentication", () => {
       await waitFor(() => result.current.isSuccess);
 
       expect(result.current.data).toBeDefined();
-      expect(result.current.data.token).toBeDefined();
+      expect(result.current.data!.token).toBeDefined();
     });
 
     test("subscribes to state changes", async () => {
@@ -306,7 +306,7 @@ describe("Authentication", () => {
 
       expect(result.current.data).toBeDefined();
       // TODO: keep as token? or use accessToken like firebase does
-      expect(result.current.data.token).toBeDefined();
+      expect(result.current.data!.token).toBeDefined();
     });
 
     test("unsubscribes from state changes", async () => {
