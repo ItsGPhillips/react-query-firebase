@@ -51,7 +51,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       await act(() => setDoc(ref, { foo: "bar" }));
 
       const { result, waitFor } = renderHook(
-        () => useFirestoreDocumentData(hookId, ref),
+        () => useFirestoreDocumentData([hookId], ref),
         { wrapper }
       );
 
@@ -70,7 +70,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocumentData(hookId, ref, undefined, {
+          useFirestoreDocumentData([hookId], ref, undefined, {
             select() {
               return {
                 baz: "ben",
@@ -95,7 +95,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocumentData<"id">(hookId, ref, {
+          useFirestoreDocumentData<"id">([hookId], ref, {
             idField: "id",
           }),
         { wrapper }
@@ -114,7 +114,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       const ref = doc(firestore, "tests", id);
 
       const { result, waitFor } = renderHook(
-        () => useFirestoreDocument(hookId, ref),
+        () => useFirestoreDocument([hookId], ref),
         { wrapper }
       );
 
@@ -136,7 +136,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocument(hookId, ref, {
+          useFirestoreDocument([hookId], ref, {
             source: "cache",
           }),
         { wrapper }
@@ -155,7 +155,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocument(hookId, ref, {
+          useFirestoreDocument([hookId], ref, {
             source: "server",
           }),
         { wrapper }
@@ -181,7 +181,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       await setDoc(ref, { bar: 123 });
 
       const { result, waitFor } = renderHook(
-        () => useFirestoreDocument(hookId, ref),
+        () => useFirestoreDocument([hookId], ref),
         {
           wrapper,
         }
@@ -215,7 +215,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
 
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocument<Foo, Bar>(hookId, ref, undefined, {
+          useFirestoreDocument<Foo, Bar>([hookId], ref, undefined, {
             select(snapshot) {
               return {
                 bar: snapshot!.data()!.bar.toString(),
@@ -244,7 +244,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       const { result, waitFor, unmount } = renderHook(
         () =>
           useFirestoreDocument(
-            hookId,
+            [hookId],
             ref,
             {
               subscribe: true,
@@ -301,7 +301,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       >(
         ({ id, reference }) =>
           useFirestoreDocument(
-            id,
+            [id],
             reference,
             {
               subscribe: true,
@@ -360,7 +360,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       >(
         ({ id, reference }) =>
           useFirestoreDocument(
-            id,
+            [id],
             reference,
             {
               subscribe: true,
@@ -388,7 +388,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       >(
         ({ id, reference }) =>
           useFirestoreDocument(
-            id,
+            [id],
             reference,
             {
               subscribe: true,
@@ -444,7 +444,7 @@ describe("useFirestoreDocument and useFirestoreDocumentData", () => {
       const doc1 = doc(firestore, "noread", id);
       const { result, waitFor } = renderHook(
         () =>
-          useFirestoreDocument(hookId, doc1, {
+          useFirestoreDocument([hookId], doc1, {
             subscribe: false,
           }),
         {

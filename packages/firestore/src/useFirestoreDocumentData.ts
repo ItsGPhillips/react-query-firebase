@@ -16,7 +16,11 @@
  */
 
 import { useCallback } from "react";
-import { QueryKey, UseQueryOptions, UseQueryResult } from "react-query";
+import {
+  QueryKey,
+  UseQueryOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import {
   DocumentData,
   DocumentReference,
@@ -24,7 +28,13 @@ import {
   onSnapshot,
   SnapshotOptions,
 } from "firebase/firestore";
-import { UseFirestoreHookOptions, WithIdField, getSnapshot } from "./index";
+import {
+  UseFirestoreHookOptions,
+  WithIdField,
+  getSnapshot,
+  SnapshotListenOptionsHelper,
+  FetchFnHelper,
+} from "./index";
 import { useSubscription } from "../../utils/src/useSubscription";
 
 type NextOrObserver<T, ID> = (
@@ -51,7 +61,7 @@ export function useFirestoreDocumentData<
 >(
   key: QueryKey,
   ref: DocumentReference<T>,
-  options?: UseFirestoreHookOptions & SnapshotOptions & { idField: ID },
+  options: UseFirestoreHookOptions & SnapshotOptions & { idField: ID },
   useQueryOptions?: Omit<
     UseQueryOptions<WithIdField<T, ID> | undefined, FirestoreError, R>,
     "queryFn"
@@ -71,15 +81,11 @@ export function useFirestoreDocumentData<
     "queryFn"
   >
 ): UseQueryResult<R, FirestoreError> {
-  const isSubscription = !!options?.subscribe;
-
   const subscribeFn = useCallback(
     (callback: NextOrObserver<T, ID>) => {
       const unsubscribe = onSnapshot(
         ref,
-        {
-          includeMetadataChanges: options?.includeMetadataChanges,
-        },
+        SnapshotListenOptionsHelper(options),
         (snapshot: DocumentData) => {
           let data = snapshot.data({
             serverTimestamps: options?.serverTimestamps,
@@ -103,21 +109,23 @@ export function useFirestoreDocumentData<
     [ref]
   );
 
-  const fetchFn = async () => {
-    return getSnapshot(ref, options?.source).then((snapshot) => {
-      let data = snapshot.data({
-        serverTimestamps: options?.serverTimestamps,
-      });
+  const fetchFn = FetchFnHelper((options) => {
+    return async () => {
+      return getSnapshot(ref, options?.source).then((snapshot) => {
+        let data = snapshot.data({
+          serverTimestamps: options?.serverTimestamps,
+        });
 
-      if (data && options?.idField) {
-        data = {
-          ...data,
-          [options.idField]: snapshot.id,
-        };
-      }
-      return data as WithIdField<T, ID> | undefined;
-    });
-  };
+        if (data && options?.idField) {
+          data = {
+            ...data,
+            [options.idField]: snapshot.id,
+          };
+        }
+        return data as WithIdField<T, ID> | undefined;
+      });
+    };
+  }, options);
 
   return useSubscription<WithIdField<T, ID> | undefined, FirestoreError, R>(
     queryKey,
@@ -125,8 +133,9 @@ export function useFirestoreDocumentData<
     subscribeFn,
     {
       ...useQueryOptions,
-      onlyOnce: !isSubscription,
+      onlyOnce: !options?.subscribe,
       fetchFn,
     }
   );
 }
+

@@ -17,16 +17,16 @@
 
 import * as React from "react";
 import axios from "axios";
-import { QueryClient, QueryClientProvider, setLogger } from "react-query";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { initializeApp } from "firebase/app";
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
-setLogger({
-  log: console.log,
-  warn: console.warn,
-  // ✅ no more errors on the console
-  error: () => null,
-});
+// setLogger({
+//   log: console.log,
+//   warn: console.warn,
+//   // ✅ no more errors on the console
+//   error: () => null,
+// });
 
 let emulatorsStarted = false;
 

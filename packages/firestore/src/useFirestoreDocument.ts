@@ -14,7 +14,11 @@
  * limitations under the License.
  *
  */
-import { QueryKey, UseQueryOptions, UseQueryResult } from "react-query";
+import {
+  QueryKey,
+  UseQueryOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import {
   DocumentData,
   DocumentReference,
@@ -22,30 +26,32 @@ import {
   onSnapshot,
   FirestoreError,
 } from "firebase/firestore";
-import { getSnapshot, UseFirestoreHookOptions } from "./index";
+import {
+  getSnapshot,
+  isSnapshotListenOptions,
+  isSnapshotOptions,
+  SnapshotListenOptionsHelper,
+  UseFirestoreHookOptions,
+} from "./index";
 import { useSubscription } from "../../utils/src/useSubscription";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 type NextOrObserver<T> = (data: DocumentSnapshot<T> | null) => Promise<void>;
 
 export function useFirestoreDocument<T = DocumentData, R = DocumentSnapshot<T>>(
   queryKey: QueryKey,
   ref: DocumentReference<T>,
-  options?: UseFirestoreHookOptions,
+  options: UseFirestoreHookOptions = {},
   useQueryOptions?: Omit<
     UseQueryOptions<DocumentSnapshot<T>, FirestoreError, R>,
     "queryFn"
   >
 ): UseQueryResult<R, FirestoreError> {
-  const isSubscription = !!options?.subscribe;
-
   const subscribeFn = useCallback(
     (callback: NextOrObserver<T>) => {
       return onSnapshot(
         ref,
-        {
-          includeMetadataChanges: options?.includeMetadataChanges,
-        },
+        SnapshotListenOptionsHelper(options),
         (snapshot: DocumentSnapshot<T>) => {
           // Set the data each time state changes.
           return callback(snapshot);
@@ -55,14 +61,30 @@ export function useFirestoreDocument<T = DocumentData, R = DocumentSnapshot<T>>(
     [ref]
   );
 
+  const memoedOptions = useMemo(() => {
+    if (isSnapshotListenOptions(options)) {
+      return {
+        ...useQueryOptions,
+      };
+    }
+
+    if (isSnapshotOptions(options)) {
+      return {
+        ...useQueryOptions,
+        onlyOnce: !options.subscribe,
+        fetchFn: async () => {
+          if (isSnapshotListenOptions(options)) {
+          }
+          return getSnapshot(ref, options?.source);
+        },
+      };
+    }
+  }, [options.subscribe]);
+
   return useSubscription<DocumentSnapshot<T>, FirestoreError, R>(
     queryKey,
     ["useFirestoreDocument", queryKey],
     subscribeFn,
-    {
-      ...useQueryOptions,
-      onlyOnce: !isSubscription,
-      fetchFn: async () => getSnapshot(ref, options?.source),
-    }
+    memoedOptions
   );
 }

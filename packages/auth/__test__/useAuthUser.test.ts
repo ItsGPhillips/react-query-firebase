@@ -1,5 +1,5 @@
 import React from "react";
-import { QueryClient } from "react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { renderHook, act, cleanup } from "@testing-library/react-hooks";
 import { Auth, UserCredential } from "firebase/auth";
 import { genId, init, signIn } from "./helpers";
@@ -42,7 +42,7 @@ describe("Authentication", () => {
       const credential = await signIn(auth);
 
       const { result, waitFor, unmount } = renderHook(
-        () => useAuthUser(hookId, auth),
+        () => useAuthUser([hookId], auth),
         {
           wrapper,
         }
@@ -59,7 +59,7 @@ describe("Authentication", () => {
       const hookId = genId();
 
       const { result, waitFor, unmount } = renderHook(
-        () => useAuthUser(hookId, auth),
+        () => useAuthUser([hookId], auth),
         {
           wrapper,
         }
@@ -87,7 +87,7 @@ describe("Authentication", () => {
 
       const { result, waitForNextUpdate, unmount } = renderHook(
         () => {
-          const r = useAuthUser(hookId, auth);
+          const r = useAuthUser([hookId], auth);
 
           return r;
         },
@@ -109,7 +109,7 @@ describe("Authentication", () => {
 
       const { result, waitFor, unmount } = renderHook(
         () =>
-          useAuthUser(hookId, auth, {
+          useAuthUser([hookId], auth, {
             onSuccess(user) {
               mock(user);
               return user;
@@ -148,7 +148,7 @@ describe("Authentication", () => {
           any
         >(
           ({ id }) =>
-            useAuthUser(id, auth, {
+            useAuthUser([id], auth, {
               onSuccess(user) {
                 mock(user);
                 return user;
@@ -188,7 +188,7 @@ describe("Authentication", () => {
         any
       >(
         ({ id }) =>
-          useAuthUser(id, auth, {
+          useAuthUser([id], auth, {
             onSuccess(user) {
               mock1(user);
 
@@ -210,7 +210,7 @@ describe("Authentication", () => {
         any
       >(
         ({ id }) =>
-          useAuthUser(id, auth, {
+          useAuthUser([id], auth, {
             onSuccess(user) {
               mock2(user);
               return user;
@@ -256,7 +256,7 @@ describe("Authentication", () => {
       const hookId = genId();
 
       const { result, waitFor } = renderHook(
-        () => useAuthIdToken(hookId, auth),
+        () => useAuthIdToken([hookId], auth),
         {
           wrapper,
         }
@@ -272,7 +272,7 @@ describe("Authentication", () => {
       await signIn(auth);
 
       const { result, waitFor } = renderHook(
-        () => useAuthIdToken(hookId, auth),
+        () => useAuthIdToken([hookId], auth),
         {
           wrapper,
         }
@@ -288,7 +288,7 @@ describe("Authentication", () => {
       const hookId = genId();
 
       const { result, waitFor } = renderHook(
-        () => useAuthIdToken(hookId, auth),
+        () => useAuthIdToken([hookId], auth),
         {
           wrapper,
         }
@@ -315,7 +315,7 @@ describe("Authentication", () => {
 
       const { result, waitFor, unmount } = renderHook(
         () =>
-          useAuthIdToken(hookId, auth, {
+          useAuthIdToken([hookId], auth, {
             onSuccess(user) {
               mock(user);
 
@@ -353,7 +353,7 @@ describe("Authentication", () => {
         any
       >(
         ({ id }) =>
-          useAuthIdToken(id, auth, {
+          useAuthIdToken([id], auth, {
             onSuccess(user) {
               mock(user);
               return user;
@@ -392,7 +392,7 @@ describe("Authentication", () => {
         any
       >(
         ({ id }) =>
-          useAuthIdToken(id, auth, {
+          useAuthIdToken([id], auth, {
             onSuccess(user) {
               mock1(user);
 
@@ -414,7 +414,7 @@ describe("Authentication", () => {
         any
       >(
         ({ id }) =>
-          useAuthIdToken(id, auth, {
+          useAuthIdToken([id], auth, {
             onSuccess(user) {
               mock2(user);
               return user;

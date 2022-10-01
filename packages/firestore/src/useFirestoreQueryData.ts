@@ -16,7 +16,11 @@
  */
 
 import { useCallback } from "react";
-import { QueryKey, UseQueryOptions, UseQueryResult } from "react-query";
+import {
+  QueryKey,
+  UseQueryOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import {
   onSnapshot,
   DocumentData,
@@ -25,9 +29,11 @@ import {
   QuerySnapshot,
 } from "firebase/firestore";
 import {
+  FetchFnHelper,
   getQuerySnapshot,
   QueryType,
   resolveQuery,
+  SnapshotListenOptionsHelper,
   UseFirestoreHookOptions,
   WithIdField,
 } from "./index";
@@ -84,9 +90,7 @@ export function useFirestoreQueryData<
       resolveQuery(query).then((res) => {
         unsubscribe = onSnapshot(
           res,
-          {
-            includeMetadataChanges: options?.includeMetadataChanges,
-          },
+          SnapshotListenOptionsHelper(options),
           (snapshot: QuerySnapshot<T>) => {
             const docs = snapshot.docs.map((doc) => {
               const data = doc.data({
@@ -110,26 +114,27 @@ export function useFirestoreQueryData<
     },
     [query, queryKey]
   );
-  const fetchFn = async () => {
-    const resolvedQuery = await resolveQuery(query);
 
-    const snapshot = await getQuerySnapshot(resolvedQuery, options?.source);
-
-    return snapshot.docs.map((doc) => {
-      let data = doc.data({
-        serverTimestamps: options?.serverTimestamps,
+  const fetchFn = FetchFnHelper(
+    (options) => async () => {
+      const resolvedQuery = await resolveQuery(query);
+      const snapshot = await getQuerySnapshot(resolvedQuery, options?.source);
+      return snapshot.docs.map((doc) => {
+        let data = doc.data({
+          serverTimestamps: options?.serverTimestamps,
+        });
+        if (options?.idField) {
+          data = {
+            ...data,
+            [options.idField]: doc.id,
+          };
+        }
+        return data as WithIdField<T, ID>;
       });
+    },
+    options
+  );
 
-      if (options?.idField) {
-        data = {
-          ...data,
-          [options.idField]: doc.id,
-        };
-      }
-
-      return data as WithIdField<T, ID>;
-    });
-  };
   return useSubscription<WithIdField<T, ID>[], FirestoreError, R>(
     queryKey,
     ["useFirestoreDocument", queryKey],

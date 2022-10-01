@@ -3,6 +3,10 @@
  * https://github.com/firebase/firebase-js-sdk/issues/3096#issuecomment-637584185
  */
 
+global.navigator = {
+   userAgent: 'node',
+}
+ 
 const BrowserEnvironment = require("jest-environment-jsdom");
 
 class MyEnvironment extends BrowserEnvironment {

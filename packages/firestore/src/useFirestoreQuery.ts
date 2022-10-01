@@ -16,7 +16,11 @@
  */
 
 import { useCallback } from "react";
-import { QueryKey, UseQueryOptions, UseQueryResult } from "react-query";
+import {
+  QueryKey,
+  UseQueryOptions,
+  UseQueryResult,
+} from "@tanstack/react-query";
 import {
   onSnapshot,
   QuerySnapshot,
@@ -24,9 +28,11 @@ import {
   FirestoreError,
 } from "firebase/firestore";
 import {
+  FetchFnHelper,
   getQuerySnapshot,
   QueryType,
   resolveQuery,
+  SnapshotListenOptionsHelper,
   UseFirestoreHookOptions,
 } from "./index";
 import { useSubscription } from "../../utils/src/useSubscription";
@@ -36,13 +42,13 @@ type NextOrObserver<T> = (data: QuerySnapshot<T> | null) => Promise<void>;
 export function useFirestoreQuery<T = DocumentData, R = QuerySnapshot<T>>(
   queryKey: QueryKey,
   query: QueryType<T>,
-  options?: UseFirestoreHookOptions,
+  options: UseFirestoreHookOptions = {},
   useQueryOptions?: Omit<
     UseQueryOptions<QuerySnapshot<T>, FirestoreError, R>,
     "queryFn"
   >
 ): UseQueryResult<R, FirestoreError> {
-  const isSubscription = !!options?.subscribe;
+  const isSubscription = !!options.subscribe;
 
   const subscribeFn = useCallback(
     (callback: NextOrObserver<T>) => {
@@ -52,9 +58,7 @@ export function useFirestoreQuery<T = DocumentData, R = QuerySnapshot<T>>(
       resolveQuery(query).then((res) => {
         unsubscribe = onSnapshot(
           res,
-          {
-            includeMetadataChanges: options?.includeMetadataChanges,
-          },
+          SnapshotListenOptionsHelper(options),
           (snapshot: QuerySnapshot<T>) => {
             return callback(snapshot);
           }
@@ -65,6 +69,13 @@ export function useFirestoreQuery<T = DocumentData, R = QuerySnapshot<T>>(
     [query, queryKey]
   );
 
+  const fetchFn = FetchFnHelper((options) => {
+    return () =>
+      resolveQuery(query).then((resolvedQuery) => {
+        return getQuerySnapshot(resolvedQuery, options?.source);
+      });
+  }, options);
+
   return useSubscription<QuerySnapshot<T>, FirestoreError, R>(
     queryKey,
     ["useFirestoreDocument", queryKey],
@@ -72,10 +83,7 @@ export function useFirestoreQuery<T = DocumentData, R = QuerySnapshot<T>>(
     {
       ...useQueryOptions,
       onlyOnce: !isSubscription,
-      fetchFn: () =>
-        resolveQuery(query).then((resolvedQuery) => {
-          return getQuerySnapshot(resolvedQuery, options?.source);
-        }),
+      fetchFn,
     }
   );
 }

@@ -36,13 +36,27 @@ export type GetSnapshotOptions = {
   source?: GetSnapshotSource;
 };
 
-export type UseFirestoreHookOptions =
-  | ({
-      subscribe: true;
-    } & SnapshotListenOptions)
-  | ({
-      subscribe?: false;
-    } & GetSnapshotOptions);
+export type SubsriberOptions = {
+  subscribe: true;
+} & SnapshotListenOptions;
+
+export type FetcherOptions = {
+  subscribe?: false;
+} & GetSnapshotOptions;
+
+export type UseFirestoreHookOptions = SubsriberOptions | FetcherOptions;
+
+export const isSnapshotListenOptions = <T extends UseFirestoreHookOptions>(
+  options?: T
+): options is T & SubsriberOptions => {
+  return options?.subscribe === true;
+};
+
+export const isSnapshotOptions = <T extends UseFirestoreHookOptions>(
+  options?: T
+): options is T & FetcherOptions => {
+  return !options?.subscribe;
+};
 
 export type WithIdField<D, F = void> = F extends string
   ? D & { [key in F]: string }
@@ -99,12 +113,26 @@ export async function resolveQuery<T>(query: QueryType<T>): Promise<Query<T>> {
       const resolved = await query();
       return resolved!;
     }
-
     return query;
   }
-
   return query;
 }
+
+export const SnapshotListenOptionsHelper = <T extends UseFirestoreHookOptions>(
+  options?: T
+) => {
+  return {
+    includeMetadataChanges:
+      options?.subscribe && options.includeMetadataChanges,
+  };
+};
+
+export const FetchFnHelper = <T extends UseFirestoreHookOptions, R>(
+  createFetcher: (options?: T & FetcherOptions) => () => Promise<R>,
+  options?: T
+) => {
+  return isSnapshotOptions(options) ? createFetcher(options) : undefined;
+};
 
 export * from "./useFirestoreDocument";
 export * from "./useFirestoreDocumentData";

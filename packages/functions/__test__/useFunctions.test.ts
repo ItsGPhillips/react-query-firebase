@@ -1,5 +1,5 @@
 import React from "react";
-import { QueryClient } from "react-query";
+import { QueryClient } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react-hooks";
 import { Functions } from "firebase/functions";
 import { genId, init } from "./helpers";
@@ -28,7 +28,7 @@ describe("Authentication", () => {
       const hookId = genId();
 
       const { result, waitFor } = renderHook(
-        () => useFunctionsQuery(hookId, functions, "test"),
+        () => useFunctionsQuery([hookId], functions, "test"),
         {
           wrapper,
         }
@@ -47,7 +47,7 @@ describe("Authentication", () => {
       };
 
       const { result, waitFor } = renderHook(
-        () => useFunctionsQuery(hookId, functions, "test", foo),
+        () => useFunctionsQuery([hookId], functions, "test", foo),
         {
           wrapper,
         }
@@ -62,7 +62,7 @@ describe("Authentication", () => {
       const hookId = genId();
 
       const { result, waitFor } = renderHook(
-        () => useFunctionsQuery(hookId, functions, "foo"),
+        () => useFunctionsQuery([hookId], functions, "foo"),
         {
           wrapper,
         }
@@ -86,7 +86,7 @@ describe("Authentication", () => {
           data: any;
         },
         any
-      >(({ id, data }) => useFunctionsQuery(id, functions, "test", data), {
+      >(({ id, data }) => useFunctionsQuery([id], functions, "test", data), {
         wrapper: (props) => wrapper({ children: props.children }),
         initialProps: {
           id: hookId1,
@@ -123,7 +123,7 @@ describe("Authentication", () => {
       const { result, waitFor } = renderHook(
         () =>
           useFunctionsQuery<RequestData, ResponseData>(
-            hookId,
+            [hookId],
             functions,
             "test",
             foo
@@ -158,7 +158,7 @@ describe("Authentication", () => {
       const { result, waitFor } = renderHook(
         () =>
           useFunctionsQuery<RequestData, ResponseData, string>(
-            hookId,
+            [hookId],
             functions,
             "test",
             foo,
